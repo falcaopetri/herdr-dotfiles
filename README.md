@@ -8,7 +8,6 @@ Mirrors `~/.config/herdr-app`; only *my* files live here. Shipped layouts/mods/t
 |---|---|
 | `keys.json`, `settings.json`, `programs.json` | copied into the herdr-app home |
 | `my-icons/` | icons referenced by `programs.json` (Devin) |
-| `mods/plate/` | panel for [Plate](https://github.com/falcaopetri/plate) |
 | `integrations/devin/` | hooks that report Devin's status (idle/working/blocked/done) to herdr via OSC 7501 |
 
 ## Install

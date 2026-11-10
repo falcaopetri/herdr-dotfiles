@@ -4,7 +4,7 @@
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
 HERDR=${HERDR_APP_HOME:-$HOME/.config/herdr-app}
-mkdir -p "$HERDR/mods" "$HERDR/my-icons"
+mkdir -p "$HERDR/my-icons"
 # keys.json is merged (repo wins per key) so sections added by other packages survive
 if [ -f "$HERDR/keys.json" ]; then
   cp "$HERDR/keys.json" "$HERDR/keys.json.bak"
@@ -15,8 +15,5 @@ for f in settings.json programs.json; do
   cp "$here/$f" "$HERDR/$f"
 done
 cp "$here"/my-icons/* "$HERDR/my-icons/"
-for m in "$here"/mods/*/; do
-  name=$(basename "$m"); mkdir -p "$HERDR/mods/$name"; cp -R "$m". "$HERDR/mods/$name/"
-done
 "$here/integrations/devin/install.sh"
 echo "Done. Check: herdr-app status"
