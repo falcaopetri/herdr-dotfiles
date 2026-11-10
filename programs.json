@@ -5,7 +5,9 @@
       "icon": "my-icons/devin.png",
       "tint": false,
       "tile": "#ffffff",
-      "run": ["devin"]
+      "run": [
+        "devin"
+      ]
     }
   }
 }

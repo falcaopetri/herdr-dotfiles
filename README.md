@@ -1,13 +1,24 @@
-# herdr-devin
+# herdr-dotfiles
 
-Makes [Devin for Terminal](https://devin.ai) show up as a proper agent in [herdr-app](https://herdr.dev):
-name, icon, "New → Devin" in the + menu, and live status (idle / working / blocked / done).
+My [herdr-app](https://herdr.dev) setup: keys, settings, program table, custom mods, and agent integrations.
+Mirrors `~/.config/herdr-app`; only *my* files live here. Shipped layouts/mods/themes, app-written state
+(`view.json`, `shared.json`, `data/`, ...) and third-party packages (e.g. flockbook, which has its own installer) are not tracked.
 
-## What it does
+| Path | What |
+|---|---|
+| `keys.json`, `settings.json`, `programs.json` | copied into the herdr-app home |
+| `my-icons/` | icons referenced by `programs.json` (Devin) |
+| `mods/plate/` | panel for [Plate](https://github.com/falcaopetri/plate) |
+| `integrations/devin/` | hooks that report Devin's status (idle/working/blocked/done) to herdr via OSC 7501 |
 
-1. `programs.json` entry — names the program `Devin`, gives it an icon and a launcher (`run: ["devin"]`).
-2. `bin/herdr-status.sh` — writes the OSC 7501 status escape (`state=…:app=devin`) to the terminal.
-3. Devin hooks in `~/.config/devin/config.json` call that script:
+## Install
+
+    ./install.sh        # requires jq
+
+Backs up replaced files as `*.bak`. `HERDR_APP_HOME` / `DEVIN_CONFIG_HOME` override locations.
+Re-running is safe. Then restart running Devin sessions.
+
+## Devin
 
 | Devin hook | Herdr status |
 |---|---|
@@ -16,14 +27,5 @@ name, icon, "New → Devin" in the + menu, and live status (idle / working / blo
 | PermissionRequest | blocked |
 | Stop | done |
 
-## Install
-
-    ./install.sh
-
-Requires `jq`. Merges into existing config (backups: `*.bak`), and only replaces hook entries that reference `herdr-status.sh`.
-Override locations with `HERDR_APP_HOME` / `DEVIN_CONFIG_HOME`. Restart running Devin sessions afterwards.
-
-## Notes
-
-- The script finds the terminal via `/dev/tty`, falling back to the parent process's tty, because Devin runs hooks without a controlling terminal.
-- Verify with `hc ls --json`: the Devin terminal should report `status` changing.
+The script writes to `/dev/tty`, falling back to the parent's tty, since Devin runs hooks without a controlling terminal.
+Verify with `hc ls --json`.
