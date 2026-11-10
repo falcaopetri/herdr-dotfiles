@@ -2,7 +2,7 @@
 
 My [herdr-app](https://herdr.dev) setup: keys, settings, program table, custom mods, and agent integrations.
 Mirrors `~/.config/herdr-app`; only *my* files live here. Shipped layouts/mods/themes, app-written state
-(`view.json`, `shared.json`, `data/`, ...) and third-party packages (e.g. flockbook, which has its own installer) are not tracked.
+(`view.json`, `shared.json`, `data/`, ...) and third-party packages are not tracked.
 
 | Path | What |
 |---|---|
