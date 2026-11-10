@@ -1,0 +1,11 @@
+{
+  "programs": {
+    "devin": {
+      "name": "Devin",
+      "icon": "my-icons/devin.png",
+      "tint": false,
+      "tile": "#ffffff",
+      "run": ["devin"]
+    }
+  }
+}

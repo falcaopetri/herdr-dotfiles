@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart":      [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ idle" }] }],
+    "UserPromptSubmit":  [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ working" }] }],
+    "PreToolUse":        [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ working" }] }],
+    "PostToolUse":       [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ working" }] }],
+    "PermissionRequest": [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ blocked" }] }],
+    "Stop":              [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ done" }] }]
+  }
+}
