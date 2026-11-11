@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Installs this setup into the Herdr desktop app (~/.config/herdr-app); safe to re-run.
-#   Shepherdr (pinned, shepherdr.pin) + my mod keys-help + borrowed mods (sources.tsv) + Devin status hooks.
+#   Shepherdr (pinned, shepherdr.pin) + my mod keys-help + borrowed mods (sources.tsv) + Devin status hooks
+#   + a patch that lets Shepherdr's chat follow Devin.
 #   ./install.sh                 everything
 #   ./install.sh --no-shepherdr  skip Shepherdr
 # Replaced files are copied first to $APP/backup-<time>/. Needs jq, git, rsync, python3.
@@ -60,6 +61,14 @@ if [[ -f "$APP/layouts/shepherdr.json" && -d "$APP/mods/file-editor" ]]; then
   jq --slurpfile mine "$HERE/keys.json" '."layout:shepherdr-files" = ((."layout:shepherdr" // {}) + ($mine[0]["layout:shepherdr"] // {}))' \
     "$APP/keys.json" > "$APP/keys.json.tmp" && mv "$APP/keys.json.tmp" "$APP/keys.json"
   echo "layout shepherdr-files  (Shepherdr + file-editor in place of Files; ctrl+shift+l to switch)"
+fi
+
+# 4c. Devin in Shepherdr's chat: a small, anchored patch to its `chat` and `pane-chat` mods (a clone under another name would break
+#     pane-chat, spaces-chat, coordinator, which look for mod "chat") plus devin-chat.py, which turns Devin's sqlite
+#     session into the log format the chat reads. Re-applied on every install; `shepherdr update` undoes it until then.
+if [[ -d "$APP/mods/chat" ]]; then
+  backup mods/chat; backup mods/pane-chat
+  python3 -I "$HERE/integrations/devin/chat/patch-chat.py" "$APP"
 fi
 
 # 5. Agent integrations.

@@ -37,6 +37,9 @@ Do not edit, in the app home or here, anything that belongs to someone else:
   name into `mods/` here.
 - Borrowed mods listed in `sources.tsv` (`reopen-tab`). Move the pin instead.
 
+The one exception: `integrations/devin/chat/patch-chat.py` patches Shepherdr's `chat` mod for Devin (see the README). It is
+re-applied by `install.sh`; don't hand-edit `mods/chat` otherwise, and when its anchors break after a pin bump, fix the patch.
+
 Only my own files are committed. No custom layouts, no other mods for now (see README).
 
 ## Keys
