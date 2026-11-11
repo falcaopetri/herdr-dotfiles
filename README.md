@@ -2,7 +2,7 @@
 
 My setup for the [Herdr](https://herdr.dev) desktop app: the
 [Shepherdr](https://github.com/eliasstravik/shepherdr) layout, a shortcuts window, reopen-closed-tab and
-Devin status reporting. Nothing else: no custom layouts, no leader menu, no other mods.
+Devin status reporting. Nothing else: no hand-made layouts, no leader menu, no other mods.
 Only *my* files live here; other people's code is fetched, pinned, from their own repos.
 
 ## Install
@@ -25,7 +25,7 @@ Then `shepherdr doctor`, and `ctrl+shift+l` to pick the Shepherdr layout.
 | Shepherdr | layout + 28 mods + helpers (`herdr-task`, ...) + agent hooks; pinned in `shepherdr.pin`, cloned to `~/src/shepherdr`, installed with `--no-build` (no web service) | [eliasstravik/shepherdr](https://github.com/eliasstravik/shepherdr) | see its repo |
 | `keys-help` | all shortcuts window (`cmd+/`) | this repo; based on Herdr's `help` | Apache-2.0 |
 | `reopen-tab` | reopen closed tabs (`cmd+shift+t`) | [mustafaTokmak/herdr-reopen-tab](https://github.com/mustafaTokmak/herdr-reopen-tab) | MIT |
-| `file-editor` | file tree and tabbed editor (syntax highlighting, Markdown/SVG preview); no layout uses it yet, open with `herdr-app do pane.split --direction right --mod file-editor` | [werlang/herdr-file-editor](https://github.com/werlang/herdr-file-editor) | none stated |
+| `file-editor` | file tree and tabbed editor (syntax highlighting, Markdown/SVG preview); used by the `shepherdr-files` layout; elsewhere `herdr-app do pane.split --direction right --mod file-editor` | [werlang/herdr-file-editor](https://github.com/werlang/herdr-file-editor) | none stated |
 | Devin hooks | Devin's status in Herdr, and its icon (`programs.json`) | `integrations/devin/` | |
 
 Shepherdr runs programs (`herdr-task`, `git`, `gh`, `hc`, ...), reads files outside its mod folders and reaches
@@ -33,6 +33,11 @@ GitHub (and ElevenLabs, if you turn on voice). `reopen-tab` runs `hc` and `git` 
 `file-editor` reads and writes files (and runs `git`, plus `herdr-core exec` over SSH).
 Not installed: Shepherdr's web app/service and voice (they need bun, and tailscale for the web app).
 Run `~/src/shepherdr/install.sh` without `--no-build` to add them.
+
+`install.sh` also writes the layout `shepherdr-files` (not versioned): Shepherdr's layout with its Files panel replaced by
+`file-editor`. It is generated from the live `layouts/shepherdr.json` on every install, so Shepherdr updates carry over, and
+Shepherdr's `layout:shepherdr` keys plus mine are copied to `layout:shepherdr-files`. Pick it with `ctrl+shift+l`. The Files button in the tab bar only shows if the app's shared `workspace.panels` includes `files`
+(it is `[]` after the welcome screen skips it); it lives in `shared.json`, which the app overwrites, so it can't be set from here.
 
 ## Keys (`keys.json`)
 

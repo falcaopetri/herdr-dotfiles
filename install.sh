@@ -50,6 +50,18 @@ while IFS=$'\t' read -r mod repo subpath sha license mode; do
   echo "mod   $mod  ($repo@${sha:0:7}, $license)"
 done < "$HERE/sources.tsv"
 
+# 4b. Layout "shepherdr-files": Shepherdr's layout with its Files panel swapped for the file-editor mod.
+#     Generated from the live layouts/shepherdr.json each time, so Shepherdr updates carry over. Its keys
+#     (layout:shepherdr) are copied to layout:shepherdr-files, then mine from keys.json win.
+if [[ -f "$APP/layouts/shepherdr.json" && -d "$APP/mods/file-editor" ]]; then
+  backup layouts/shepherdr-files.json; backup keys.json
+  jq '(.. | objects | select(.id? == "files" and .type? == "block") | .content.mod) = "file-editor"' \
+    "$APP/layouts/shepherdr.json" > "$APP/layouts/shepherdr-files.json.tmp" && mv "$APP/layouts/shepherdr-files.json.tmp" "$APP/layouts/shepherdr-files.json"
+  jq --slurpfile mine "$HERE/keys.json" '."layout:shepherdr-files" = ((."layout:shepherdr" // {}) + ($mine[0]["layout:shepherdr"] // {}))' \
+    "$APP/keys.json" > "$APP/keys.json.tmp" && mv "$APP/keys.json.tmp" "$APP/keys.json"
+  echo "layout shepherdr-files  (Shepherdr + file-editor in place of Files; ctrl+shift+l to switch)"
+fi
+
 # 5. Agent integrations.
 "$HERE/integrations/devin/install.sh"
 
