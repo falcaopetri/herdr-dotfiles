@@ -4,5 +4,8 @@
     "cmd-shift-/": "mod.open:keys-help",
     "cmd-shift-t": "mod.open:reopen-tab",
     "cmd-l": "chat.focus"
+  },
+  "layout:shepherdr": {
+    "cmd-n": "tabs-tasks.newspace"
   }
 }
