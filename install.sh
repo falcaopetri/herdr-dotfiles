@@ -53,12 +53,19 @@ done < "$HERE/sources.tsv"
 
 # 4b. Layout "shepherdr-files": Shepherdr's layout with its Files panel swapped for the file-editor mod.
 #     Generated from the live layouts/shepherdr.json each time, so Shepherdr updates carry over. Its keys
-#     (layout:shepherdr) are copied to layout:shepherdr-files, then mine from keys.json win.
+#     (layout:shepherdr) are copied to layout:shepherdr-files, then mine from keys.json (layout:shepherdr, layout:shepherdr-files) win.
 if [[ -f "$APP/layouts/shepherdr.json" && -d "$APP/mods/file-editor" ]]; then
   backup layouts/shepherdr-files.json; backup keys.json
-  jq '(.. | objects | select(.id? == "files" and .type? == "block") | .content.mod) = "file-editor"' \
+  # Also docks desktop-notifications and space-jump (0px blocks) and adds the Asks panel to the right-hand stack: the top node is wrapped in a column and its root-only keys move up to it.
+  jq '(.. | objects | select(.id? == "files" and .type? == "block") | .content.mod) = "file-editor"
+      | ["titlebar","traffic_lights","terminal_padding","background","preview","terminal_menu","toast","theme","colors","font","font_size","ui_font","terminal_opacity"] as $rk
+      | with_entries(select(.key as $k | $rk | index($k))) + {id: "frame", type: "column", children: [
+          with_entries(select(.key as $k | ($rk | index($k)) | not)),
+          {id: "notifications", type: "block", content: {mod: "desktop-notifications"}, size: {px: 0}},
+          {id: "space-jump", type: "block", content: {mod: "space-jump"}, size: {px: 0}}]}
+      | (.. | objects | select(.id? == "panel-body") | .children) += [{id: "asks", type: "block", content: {mod: "asks"}}]' \
     "$APP/layouts/shepherdr.json" > "$APP/layouts/shepherdr-files.json.tmp" && mv "$APP/layouts/shepherdr-files.json.tmp" "$APP/layouts/shepherdr-files.json"
-  jq --slurpfile mine "$HERE/keys.json" '."layout:shepherdr-files" = ((."layout:shepherdr" // {}) + ($mine[0]["layout:shepherdr"] // {}))' \
+  jq --slurpfile mine "$HERE/keys.json" '."layout:shepherdr-files" = ((."layout:shepherdr" // {}) + ($mine[0]["layout:shepherdr"] // {}) + ($mine[0]["layout:shepherdr-files"] // {}))' \
     "$APP/keys.json" > "$APP/keys.json.tmp" && mv "$APP/keys.json.tmp" "$APP/keys.json"
   echo "layout shepherdr-files  (Shepherdr + file-editor in place of Files; ctrl+shift+l to switch)"
 fi
@@ -69,6 +76,13 @@ fi
 if [[ -d "$APP/mods/chat" ]]; then
   backup mods/chat; backup mods/pane-chat
   python3 -I "$HERE/integrations/devin/chat/patch-chat.py" "$APP"
+fi
+
+# 4d. Asks (herdr-agent-ask) in Shepherdr's tab bar: engine + button, a small anchored patch to `tabs-tasks`. Re-applied on every
+#     install; `shepherdr update` undoes it until then.
+if [[ -d "$APP/mods/tabs-tasks" && -d "$APP/mods/tabs-asks" ]]; then
+  backup mods/tabs-tasks
+  python3 -I "$HERE/integrations/asks/patch-tabs.py" "$APP"
 fi
 
 # 5. Agent integrations.

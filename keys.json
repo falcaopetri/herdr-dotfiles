@@ -3,9 +3,22 @@
     "cmd-/": "mod.open:keys-help",
     "cmd-shift-/": "mod.open:keys-help",
     "cmd-shift-t": "mod.open:reopen-tab",
-    "cmd-l": "chat.focus"
+    "cmd-l": "chat.focus",
+    "cmd-n": "mod.open:space-picker"
   },
   "layout:shepherdr": {
-    "cmd-n": "tabs-tasks.newspace"
+    "cmd-n": "mod.open:space-picker"
+  },
+  "layout:shepherdr-files": {
+    "alt-1": "space-jump.1",
+    "alt-2": "space-jump.2",
+    "alt-3": "space-jump.3",
+    "alt-4": "space-jump.4",
+    "alt-5": "space-jump.5",
+    "alt-6": "space-jump.6",
+    "alt-7": "space-jump.7",
+    "alt-8": "space-jump.8",
+    "alt-9": "space-jump.9",
+    "cmd-shift-a": "tabs-tasks.asks-toggle"
   }
 }

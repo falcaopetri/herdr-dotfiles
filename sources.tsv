@@ -2,3 +2,9 @@
 # mod	repo	path in the repo	commit	license	default|optional
 reopen-tab	mustafaTokmak/herdr-reopen-tab	mods/reopen-tab	9322da9b516b65e5f0f9b03e9e2d123448b05ff9	MIT	default
 file-editor	werlang/herdr-file-editor	mods/file-editor	ab5bceb4d53f876637451de83a8469994c5fd8b0	none stated	default
+desktop-notifications	benjaminsicard/herdr-mods	desktop-notifications/mods/desktop-notifications	134a725692cf35088acc14353bd6e1d1ea5078a6	none stated	default
+spaces-jump	jorgeorejas/herdr-jump	mods/spaces-jump	8a7c7c73d21cfa1738787f192d5ab59ed347d494	Apache-2.0	optional
+agents-jump	jorgeorejas/herdr-jump	mods/agents-jump	8a7c7c73d21cfa1738787f192d5ab59ed347d494	Apache-2.0	optional
+asks	sachin-philip/herdr-agent-ask	mods/asks	fa9b4f569e0b61ad72b7d6f84743dab28494300d	MIT	default
+tabs-asks	sachin-philip/herdr-agent-ask	mods/tabs-asks	fa9b4f569e0b61ad72b7d6f84743dab28494300d	MIT	default
+space-picker	iqthink/herdr-space-picker	mods/space-picker	c4f5b429b5b29d3d6cc6c5ff7f02a6d53ed4027e	MIT	default

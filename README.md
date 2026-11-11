@@ -26,18 +26,22 @@ Then `shepherdr doctor`, and `ctrl+shift+l` to pick the Shepherdr layout.
 | `keys-help` | all shortcuts window (`cmd+/`) | this repo; based on Herdr's `help` | Apache-2.0 |
 | `reopen-tab` | reopen closed tabs (`cmd+shift+t`) | [mustafaTokmak/herdr-reopen-tab](https://github.com/mustafaTokmak/herdr-reopen-tab) | MIT |
 | `file-editor` | file tree and tabbed editor (syntax highlighting, Markdown/SVG preview); used by the `shepherdr-files` layout; elsewhere `herdr-app do pane.split --direction right --mod file-editor` | [werlang/herdr-file-editor](https://github.com/werlang/herdr-file-editor) | none stated |
+| `space-picker` | folder picker with favorites (★) and recents; opens a space in the chosen folder (`cmd+n`) | [iqthink/herdr-space-picker](https://github.com/iqthink/herdr-space-picker) | MIT |
+| `asks`, `tabs-asks` | panel with every question your agents are waiting on; `asks` is the panel, `tabs-asks` only supplies the engine that `patch-tabs.py` puts into Shepherdr's tab bar | [sachin-philip/herdr-agent-ask](https://github.com/sachin-philip/herdr-agent-ask) | MIT |
+| `spaces-jump`, `agents-jump` | number pills + jump keys for Herdr's plain `spaces`/`agents` lists; optional (`./install.sh spaces-jump agents-jump`), unused by my layouts | [jorgeorejas/herdr-jump](https://github.com/jorgeorejas/herdr-jump) | Apache-2.0 |
+| `desktop-notifications` | "needs you" / "finished" agent alerts in the macOS Notification Center (docked as a 0px block in `shepherdr-files`; `brew install terminal-notifier` for click-to-focus) | [benjaminsicard/herdr-mods](https://github.com/benjaminsicard/herdr-mods/tree/main/desktop-notifications) | none stated |
 | Devin hooks | Devin's status in Herdr, and its icon (`programs.json`) | `integrations/devin/` | |
 | Devin in the chat | Shepherdr's chat view follows Devin: a small patch to its `chat` mod, applied by `install.sh` | `integrations/devin/chat/` | |
 
 Shepherdr runs programs (`herdr-task`, `git`, `gh`, `hc`, ...), reads files outside its mod folders and reaches
 GitHub (and ElevenLabs, if you turn on voice). `reopen-tab` runs `hc` and `git` and keeps a ledger in `data/reopen-tab/`.
-`file-editor` reads and writes files (and runs `git`, plus `herdr-core exec` over SSH).
+`file-editor` reads and writes files (and runs `git`, plus `herdr-core exec` over SSH). `desktop-notifications` runs `terminal-notifier`/`osascript` and `herdr-app`; it reads no files and uses no network.
 Not installed: Shepherdr's web app/service and voice (they need bun, and tailscale for the web app).
 Run `~/src/shepherdr/install.sh` without `--no-build` to add them.
 
 `install.sh` also writes the layout `shepherdr-files` (not versioned): Shepherdr's layout with its Files panel replaced by
 `file-editor`. It is generated from the live `layouts/shepherdr.json` on every install, so Shepherdr updates carry over, and
-Shepherdr's `layout:shepherdr` keys plus mine are copied to `layout:shepherdr-files`. Pick it with `ctrl+shift+l`. The Files button in the tab bar only shows if the app's shared `workspace.panels` includes `files`
+Shepherdr's `layout:shepherdr` keys plus mine are copied to `layout:shepherdr-files`. It also docks two 0px blocks there, `desktop-notifications` and my `space-jump` (`alt+1..9`; it counts spaces in Herdr's order, which differs from the sidebar if Pinned or sections reorder rows); other layouts need them added by hand. Pick it with `ctrl+shift+l`. The Files button in the tab bar only shows if the app's shared `workspace.panels` includes `files`
 (it is `[]` after the welcome screen skips it); it lives in `shared.json`, which the app overwrites, so it can't be set from here.
 
 ## Keys (`keys.json`)
@@ -46,8 +50,12 @@ Shepherdr's `layout:shepherdr` keys plus mine are copied to `layout:shepherdr-fi
 |---|---|
 | `cmd+/`, `cmd+shift+/` | all shortcuts |
 | `cmd+shift+t` | reopen the last closed tab |
+| `cmd+shift+a` | toggle the Asks panel (`tabs-tasks.asks-toggle`), in `shepherdr-files` |
 | `cmd+l` | focus the input box of the Shepherdr chat on screen (`chat.focus`) |
-| `cmd+n` | Shepherdr's New space dialog (`tabs-tasks.newspace`), in the Shepherdr layout; same as `ctrl+shift+n` |
+| `alt+1..9` | jump to the Nth space (`space-jump.N`, my `space-jump` mod), in `shepherdr-files` only; `cmd+1..9` stays tabs |
+| `cmd+n` | folder picker with favorites and recents; opens a new space there (`space-picker`). Replaces Shepherdr's New space dialog (`tabs-tasks.newspace`, still on `ctrl+shift+n`) |
+
+There is one layout, `shepherdr-files`, and everything I add goes into it. For Asks, `install.sh` runs `integrations/asks/patch-tabs.py`: eight exact-string edits to Shepherdr's `tabs-tasks` (and a copy of the Asks engine and state next to it) that add an **Asks** button with a count beside Files and Tasks, the engine's timers, and the `asks-toggle` command; the generated layout also gets the `asks` panel in its right-hand stack. If Shepherdr changes that code the patch stops with an error and changes nothing; `shepherdr update` undoes it until the next install. The engine sends the text of a blocked agent's screen to `claude -p` (Haiku) to classify questions, and appends each answer you give to `docs/decisions.md` in that agent's workspace.
 
 Shepherdr merges its own keys (`ctrl+k` jump, `ctrl+shift+?`, `alt+1..9`, ...) at install.
 
