@@ -38,6 +38,7 @@ Run `~/src/shepherdr/install.sh` without `--no-build` to add them.
 |---|---|
 | `cmd+/`, `cmd+shift+/` | all shortcuts |
 | `cmd+shift+t` | reopen the last closed tab |
+| `cmd+l` | focus the input box of the Shepherdr chat on screen (`chat.focus`) |
 
 Shepherdr merges its own keys (`ctrl+k` jump, `ctrl+shift+?`, `alt+1..9`, ...) at install.
 

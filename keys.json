@@ -2,6 +2,7 @@
   "global": {
     "cmd-/": "mod.open:keys-help",
     "cmd-shift-/": "mod.open:keys-help",
-    "cmd-shift-t": "mod.open:reopen-tab"
+    "cmd-shift-t": "mod.open:reopen-tab",
+    "cmd-l": "chat.focus"
   }
 }
