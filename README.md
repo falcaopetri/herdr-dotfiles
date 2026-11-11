@@ -1,21 +1,61 @@
 # herdr-dotfiles
 
-My [herdr-app](https://herdr.dev) setup: keys, settings, program table, and agent integrations.
-Mirrors `~/.config/herdr-app`; only *my* files live here. Shipped layouts/mods/themes, app-written state
-(`view.json`, `shared.json`, `data/`, ...) and third-party packages are not tracked.
-
-| Path | What |
-|---|---|
-| `keys.json`, `settings.json`, `programs.json` | copied into the herdr-app home |
-| `my-icons/` | icons referenced by `programs.json` (Devin) |
-| `integrations/devin/` | hooks that report Devin's status (idle/working/blocked/done) to herdr via OSC 7501 |
+My setup for the [Herdr](https://herdr.dev) desktop app: the
+[Shepherdr](https://github.com/eliasstravik/shepherdr) layout, a shortcuts window, reopen-closed-tab and
+Devin status reporting. Nothing else: no custom layouts, no leader menu, no other mods.
+Only *my* files live here; other people's code is fetched, pinned, from their own repos.
 
 ## Install
 
-    ./install.sh        # requires jq
+```sh
+git clone https://github.com/falcaopetri/herdr-dotfiles ~/herdr-dotfiles
+~/herdr-dotfiles/install.sh              # needs jq, git, rsync, python3; the Herdr app opened once
+```
 
-Backs up replaced files as `*.bak`. `HERDR_APP_HOME` / `DEVIN_CONFIG_HOME` override locations.
-Re-running is safe. Then restart running Devin sessions.
+Re-run after `git pull` to update. Whatever it replaces is saved in `~/.config/herdr-app/backup-<time>/`.
+`keys.json` and `programs.json` are merged (this repo wins per key), so keys from other sources survive.
+`./install.sh --no-shepherdr` skips Shepherdr. `HERDR_APP_HOME`, `DEVIN_CONFIG_HOME` and `SHEPHERDR_SRC`
+(default `~/src/shepherdr`) override locations.
+Then `shepherdr doctor`, and `ctrl+shift+l` to pick the Shepherdr layout.
+
+## What it installs
+
+| Piece | What | From | License |
+|---|---|---|---|
+| Shepherdr | layout + 28 mods + helpers (`herdr-task`, ...) + agent hooks; pinned in `shepherdr.pin`, cloned to `~/src/shepherdr`, installed with `--no-build` (no web service) | [eliasstravik/shepherdr](https://github.com/eliasstravik/shepherdr) | see its repo |
+| `keys-help` | all shortcuts window (`cmd+/`) | this repo; based on Herdr's `help` | Apache-2.0 |
+| `reopen-tab` | reopen closed tabs (`cmd+shift+t`) | [mustafaTokmak/herdr-reopen-tab](https://github.com/mustafaTokmak/herdr-reopen-tab) | MIT |
+| Devin hooks | Devin's status in Herdr, and its icon (`programs.json`) | `integrations/devin/` | |
+
+Shepherdr runs programs (`herdr-task`, `git`, `gh`, `hc`, ...), reads files outside its mod folders and reaches
+GitHub (and ElevenLabs, if you turn on voice). `reopen-tab` runs `hc` and `git` and keeps a ledger in `data/reopen-tab/`.
+Not installed: Shepherdr's web app/service and voice (they need bun, and tailscale for the web app).
+Run `~/src/shepherdr/install.sh` without `--no-build` to add them.
+
+## Keys (`keys.json`)
+
+| Keys | Action |
+|---|---|
+| `cmd+/`, `cmd+shift+/` | all shortcuts |
+| `cmd+shift+t` | reopen the last closed tab |
+
+Shepherdr merges its own keys (`ctrl+k` jump, `ctrl+shift+?`, `alt+1..9`, ...) at install.
+
+## Updating pins
+
+`./upstream.sh` (needs `gh`) says which pins (`shepherdr.pin`, `sources.tsv`) have news. To move one, edit the
+commit and re-run `./install.sh`.
+
+## Layout of this repo
+
+| Path | What |
+|---|---|
+| `keys.json`, `programs.json`, `my-icons/` | merged into the app home |
+| `mods/keys-help/` | my mod |
+| `sources.tsv` | borrowed mods: repo, path, commit, license, default/optional |
+| `shepherdr.pin` | Shepherdr's repo and commit |
+| `install.sh`, `upstream.sh` | install; newer commits upstream |
+| `integrations/devin/` | hooks reporting Devin's status to Herdr (OSC 7501) |
 
 ## Devin
 

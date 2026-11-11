@@ -1,0 +1,3 @@
+# Mods from other people's repos: fetched at install time, pinned to a commit, never copied here.
+# mod	repo	path in the repo	commit	license	default|optional
+reopen-tab	mustafaTokmak/herdr-reopen-tab	mods/reopen-tab	9322da9b516b65e5f0f9b03e9e2d123448b05ff9	MIT	default
