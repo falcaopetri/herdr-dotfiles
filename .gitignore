@@ -3,3 +3,6 @@
 *.tmp
 *.d.ts
 jsconfig.json
+requests.md
+
+*.herdr-chat.lock

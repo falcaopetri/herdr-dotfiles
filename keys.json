@@ -4,21 +4,21 @@
     "cmd-shift-/": "mod.open:keys-help",
     "cmd-shift-t": "mod.open:reopen-tab",
     "cmd-l": "chat.focus",
-    "cmd-n": "mod.open:space-picker"
-  },
-  "layout:shepherdr": {
-    "cmd-n": "mod.open:space-picker"
+    "cmd-shift-b": "mod.open:submit",
+    "cmd-shift-e": "mod.open:devin-sessions",
+    "cmd-shift-k": "session-peek.keep"
   },
   "layout:shepherdr-files": {
-    "alt-1": "space-jump.1",
-    "alt-2": "space-jump.2",
-    "alt-3": "space-jump.3",
-    "alt-4": "space-jump.4",
-    "alt-5": "space-jump.5",
-    "alt-6": "space-jump.6",
-    "alt-7": "space-jump.7",
-    "alt-8": "space-jump.8",
-    "alt-9": "space-jump.9",
-    "cmd-shift-a": "tabs-tasks.asks-toggle"
+    "cmd-n": "agent-sidebar.new",
+    "cmd-1": "agent-sidebar.1",
+    "cmd-2": "agent-sidebar.2",
+    "cmd-3": "agent-sidebar.3",
+    "cmd-4": "agent-sidebar.4",
+    "cmd-5": "agent-sidebar.5",
+    "cmd-6": "agent-sidebar.6",
+    "cmd-7": "agent-sidebar.7",
+    "cmd-8": "agent-sidebar.8",
+    "cmd-9": "agent-sidebar.9",
+    "cmd-w": "agent-sidebar.close"
   }
 }

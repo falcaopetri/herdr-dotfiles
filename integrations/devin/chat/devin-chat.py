@@ -5,7 +5,7 @@ Usage: devin-chat.py <session-id>
 Writes $HERDR_APP_HOME/data/devin-chat/<session-id>.jsonl (only when it changed; earlier lines never change,
 the chat reads it by byte offset) and prints its path, or "pending" when the session has no messages yet.
 """
-import json, os, sqlite3, sys
+import json, os, re, sqlite3, sys
 
 DB = os.environ.get("DEVIN_DATA_HOME", os.path.expanduser("~/.local/share/devin")) + "/cli/sessions.db"
 APP = os.environ.get("HERDR_APP_HOME", os.path.expanduser("~/.config/herdr-app"))
@@ -35,6 +35,18 @@ def tool(name, a):
     if name in ("todo_write", "update_plan"): return "TodoWrite", {**a, "todos": a.get("todos") or []}
     return name, a
 
+REF = re.compile(r'<ref_(?:file|snippet)\s+([^>]*?)/?>')
+ATTR = re.compile(r'(\w+)="([^"]*)"')
+
+def refs(text):
+    """Devin cites files as <ref_file file="..." /> (and <ref_snippet file lines>): shown as `path` (path:lines) instead of raw tags."""
+    def one(m):
+        a = dict(ATTR.findall(m.group(1)))
+        f = a.get("file")
+        if not f: return m.group(0)
+        return "`%s%s`" % (f, (":" + a["lines"]) if a.get("lines") else "")
+    return REF.sub(one, text)
+
 def lines(con, sid):
     seen = set()
     for (raw,) in con.execute("select chat_message from message_nodes where session_id=? order by node_id", (sid,)):
@@ -60,7 +72,7 @@ def lines(con, sid):
             blocks = []
             think = (m.get("thinking") or {}).get("thinking")
             if think: blocks.append({"type": "thinking", "thinking": think, "signature": ""})
-            if isinstance(content, str) and content.strip(): blocks.append({"type": "text", "text": content})
+            if isinstance(content, str) and content.strip(): blocks.append({"type": "text", "text": refs(content)})
             for c in m.get("tool_calls") or []:
                 n, inp = tool(c.get("name", ""), c.get("arguments"))
                 blocks.append({"type": "tool_use", "id": c.get("id"), "name": n, "input": inp})

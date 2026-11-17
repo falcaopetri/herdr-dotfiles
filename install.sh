@@ -18,6 +18,9 @@ extra=" $* "
 
 [[ -d "$APP" ]] || { echo "No $APP: open the Herdr app once, then run this again." >&2; exit 1; }
 for c in jq git rsync python3 curl tar; do command -v "$c" >/dev/null || { echo "$c is required." >&2; exit 1; }; done
+# herdr-chat installed (its new-chat mod is in the app home): its `chat` mod stands in for Shepherdr's, which lives on as mods/chat.orig.
+# Shepherdr's installer would put its own `chat` back, and the patches for Shepherdr's chat (4c) have nothing to patch.
+HERDR_CHAT=0; [[ -f "$APP/mods/new-chat/mod.json" ]] && HERDR_CHAT=1
 backup() { [[ -e "$APP/$1" ]] || return 0; mkdir -p "$BACKUP/$(dirname "$1")"; cp -R "$APP/$1" "$BACKUP/$1"; }
 
 # 0. Download everything that is needed (the only step that uses the network); what is already in $CACHE / $SRC is skipped.
@@ -41,7 +44,9 @@ if [[ $extra == *" --fetch "* ]]; then echo "Downloaded into $CACHE (and $SRC). 
 
 # 1. Shepherdr, at its pinned commit, from a stable clone ($SRC).
 #    --no-build: no web app/service (needs bun + tailscale; rerun without it to add them).
-if [[ $extra != *" --no-shepherdr "* ]]; then
+if [[ $extra != *" --no-shepherdr "* && $HERDR_CHAT = 1 ]]; then
+  echo "skip  Shepherdr (herdr-chat's chat mod is installed: Shepherdr's installer would replace it; use --no-shepherdr to hide this)"
+elif [[ $extra != *" --no-shepherdr "* ]]; then
   git -C "$SRC" checkout -q "$ssha"
   "$SRC/install.sh" --no-build --yes --keys keep
 fi
@@ -104,7 +109,7 @@ fi
 # 4c. Devin in Shepherdr's chat: a small, anchored patch to its `chat` and `pane-chat` mods (a clone under another name would break
 #     pane-chat, spaces-chat, coordinator, which look for mod "chat") plus devin-chat.py, which turns Devin's sqlite
 #     session into the log format the chat reads. Re-applied on every install; `shepherdr update` undoes it until then.
-if [[ -d "$APP/mods/chat" ]]; then
+if [[ -d "$APP/mods/chat" && $HERDR_CHAT = 0 ]]; then
   backup mods/chat; backup mods/pane-chat
   python3 -I "$HERE/integrations/devin/chat/patch-chat.py" "$APP"
 fi
@@ -121,6 +126,8 @@ fi
 if [[ -f "$APP/mods/reopen-tab/plan.js" ]]; then
   backup mods/reopen-tab
   python3 -I "$HERE/integrations/reopen/patch-plan.py" "$APP"
+  # With herdr-chat installed, a closed chat tab comes back as a chat (not as its host's terminal).
+  [[ -f "$APP/mods/new-chat/mod.json" ]] && python3 -I "$HERE/integrations/reopen/patch-chat.py" "$APP"
 fi
 
 # 4f. agent-sidebar (optional mod): folder headings always, and agent-sidebar.<n> jump commands (cmd+1..9 in shepherdr-files).
@@ -128,6 +135,9 @@ fi
 if [[ -f "$APP/mods/agent-sidebar/main.js" ]]; then
   backup mods/agent-sidebar
   python3 -I "$HERE/integrations/agent-sidebar/patch-sidebar.py" "$APP"
+  # With herdr-chat installed (its new-chat mod), a new agent session in an open space is one of its chats.
+  [[ -f "$APP/mods/new-chat/mod.json" && -f "$APP/mods/agent-sidebar/launcher.js" ]] &&
+    python3 -I "$HERE/integrations/agent-sidebar/patch-launcher.py" "$APP"
 fi
 
 # 4g. Agents open in chat view: a small anchored addition to pane-chat (once per terminal). Re-applied on every install;

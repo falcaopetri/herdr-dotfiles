@@ -4,7 +4,8 @@
     "UserPromptSubmit":  [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ working" }] }],
     "PreToolUse":        [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ working" }] }],
     "PostToolUse":       [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ working" }] }],
-    "PermissionRequest": [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ blocked" }] }],
+    "PermissionRequest": [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ blocked" }] },
+                         { "hooks": [{ "type": "command", "command": "__ASK__", "timeout": 1800 }] }],
     "Stop":              [{ "hooks": [{ "type": "command", "command": "__SCRIPT__ done" }] }]
   }
 }

@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""Archive (or restore) Devin sessions the way Devin Desktop does, so they leave its list and Plate's Needs you.
+Archiving lives in Desktop's state.vscdb, ItemTable key `windsurf.acp.session/archivedSessions` (a JSON list of
+"acp/devin-cli/<id>"), not in the CLI's sessions.db.
+  devin-archive                 the latest session of this folder that no live Devin holds
+  devin-archive <id> [<id>...]  those sessions
+  devin-archive --undo <id>...  un-archive
+  devin-archive --list          archived ids
+Env: DEVIN_DESKTOP_STATE (state.vscdb), DEVIN_DATA (CLI data dir). Quit Devin Desktop first: it keeps this list in
+memory and can write its own copy back over ours."""
+import json, os, sqlite3, subprocess, sys
+
+KEY = "windsurf.acp.session/archivedSessions"
+PREFIX = "acp/devin-cli/"
+HOME = os.path.expanduser("~")
+STATE = os.environ.get("DEVIN_DESKTOP_STATE") or f"{HOME}/Library/Application Support/Devin/User/globalStorage/state.vscdb"
+DATA = os.environ.get("DEVIN_DATA") or f"{HOME}/.local/share/devin/cli"
+
+
+def die(msg):
+    sys.exit(f"devin-archive: {msg}")
+
+
+def live(sid):
+    try:
+        pid = int(open(f"{DATA}/session_locks/{sid}.lock").read().strip())
+        os.kill(pid, 0)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def latest_here():
+    db = sqlite3.connect(f"file:{DATA}/sessions.db?mode=ro", uri=True)
+    rows = db.execute("select id from sessions where working_directory in (?, ?) and hidden=0 "
+                      "order by last_activity_at desc limit 25", (os.getcwd(), os.path.realpath(os.getcwd()))).fetchall()
+    for (sid,) in rows:
+        if not live(sid):
+            return sid
+    die("no session of this folder without a live Devin (give the id: devin-archive <id>)")
+
+
+def main(argv):
+    undo = "--undo" in argv
+    ids = [a for a in argv if not a.startswith("--")]
+    if not os.path.exists(STATE):
+        die(f"no Devin Desktop state at {STATE}")
+    if subprocess.run(["pgrep", "-qf", "Devin.app/Contents/MacOS"]).returncode == 0 and "--list" not in argv:
+        print("warning: Devin Desktop is running; quit it, or it may write its own list back", file=sys.stderr)
+    db = sqlite3.connect(STATE, timeout=10)
+    row = db.execute("select value from ItemTable where key=?", (KEY,)).fetchone()
+    try:
+        cur = json.loads(row[0]) if row else []
+        cur = cur if isinstance(cur, list) else []
+    except (TypeError, ValueError):
+        die("the archived list is not JSON; touching nothing")
+    if "--list" in argv:
+        print("\n".join(r.split("/")[-1] for r in cur)); return
+    if not ids:
+        ids = [latest_here()]
+    new = list(cur)
+    for sid in ids:
+        ref = PREFIX + sid
+        if undo and ref in new: new.remove(ref)
+        elif not undo and ref not in new: new.append(ref)
+    if new == cur:
+        print("nothing to change"); return
+    db.execute("begin immediate")
+    db.execute("insert into ItemTable(key,value) values(?,?) on conflict(key) do update set value=excluded.value",
+               (KEY, json.dumps(new, separators=(",", ":"))))
+    db.commit()
+    print(("un-archived " if undo else "archived ") + " ".join(ids))
+
+
+main(sys.argv[1:])

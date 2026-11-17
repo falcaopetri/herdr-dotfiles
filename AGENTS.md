@@ -26,7 +26,7 @@ into this repo, or the next `install.sh` will overwrite or lose it (`mods/<name>
 |---|---|---|
 | `keys.json`, `programs.json` | same names | **merged** with jq (`app * repo`): this repo wins per key, other keys survive |
 | `my-icons/` | `my-icons/` | copied |
-| `mods/keys-help/` | `mods/keys-help/` | my own mod, synced with `--delete` |
+| `mods/keys-help/`, `mods/submit/` | `mods/<name>/` | my own mods, synced with `--delete` |
 | `sources.tsv` | `mods/<name>/` | other people's mods: fetched at install, pinned to a commit, never copied into this repo |
 | `shepherdr.pin` | `~/src/shepherdr` clone, installed with `--no-build --yes --keys keep` | pinned commit of [eliasstravik/shepherdr](https://github.com/eliasstravik/shepherdr) |
 | `integrations/devin/` | Devin's hooks config | Devin status in Herdr (OSC 7501) |
@@ -37,7 +37,7 @@ Do not edit, in the app home or here, anything that belongs to someone else:
   name into `mods/` here.
 - Borrowed mods listed in `sources.tsv` (`reopen-tab`). Move the pin instead.
 
-The one exception: `integrations/devin/chat/patch-chat.py` patches Shepherdr's `chat` mod for Devin (see the README). It is
+Exceptions: `integrations/devin/chat/patch-chat.py` patches Shepherdr's `chat` mod for Devin (see the README), and `integrations/reopen/patch-plan.py` adds Devin to the `reopen-tab` mod's `RESUME` table (the user approved this patch instead of a clone), and, only while herdr-chat is installed, `integrations/reopen/patch-chat.py` (reopen a closed chat tab as a chat) and `integrations/agent-sidebar/patch-launcher.py` (new agent sessions open as herdr-chat chats). herdr-chat's `chat` mod then stands in for Shepherdr's (`mods/chat.orig`): see the README. They are
 re-applied by `install.sh`; don't hand-edit `mods/chat` otherwise, and when its anchors break after a pin bump, fix the patch.
 
 Only my own files are committed. No custom layouts, no other mods for now (see README).
@@ -65,6 +65,10 @@ truth for the API. In short:
 - An invalid file keeps the last good version and writes `<name>.error` (`keys.error`, `layout.error`, `settings.error`,
   `programs.error`) in the app home. Look there after every edit.
 - `keys-help` is derived from Herdr's `help` mod (Apache-2.0); keep attribution when touching it.
+
+## Requests
+
+`requests.md` (created by the `submit` mod, `cmd+shift+b`) is my backlog for this repo: `- [ ] date · bug|feature · text`. When a space opens here, read the open entries, and tick them (`[x]`) once implemented.
 
 ## Pins and updates
 
