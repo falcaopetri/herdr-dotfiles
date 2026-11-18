@@ -4,6 +4,7 @@
 #   + a patch that lets Shepherdr's chat follow Devin.
 #   ./install.sh                 everything
 #   ./install.sh --no-shepherdr  skip Shepherdr
+#   ./install.sh --no-herdr-chat skip herdr-chat (my fork at herdr-chat.pin, installed before everything else)
 #   ./install.sh --fetch         only download (the one step that needs the internet), then stop
 # Everything from the internet is downloaded first, in step 0 (one tarball per repo, one git fetch for Shepherdr),
 # into $CACHE; the rest works offline, so switching networks only has to cover `./install.sh --fetch`.
@@ -13,6 +14,7 @@ readonly HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly APP="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 readonly BACKUP="$APP/backup-$(date +%Y%m%d-%H%M%S)"
 readonly SRC="${SHEPHERDR_SRC:-$HOME/src/shepherdr}"
+readonly CHATSRC="${HERDR_CHAT_SRC:-$HOME/src/herdr-chat}"
 readonly CACHE="${HERDR_DOTFILES_CACHE:-$HOME/.cache/herdr-dotfiles}"
 extra=" $* "
 
@@ -33,6 +35,11 @@ if [[ $extra != *" --no-shepherdr "* ]]; then
   [[ -d "$SRC/.git" ]] || git clone -q --no-checkout "https://github.com/$srepo" "$SRC"
   git -C "$SRC" cat-file -e "$ssha^{commit}" 2>/dev/null || { echo "fetch shepherdr@${ssha:0:7}"; git -C "$SRC" fetch -q origin; }
 fi
+if [[ $extra != *" --no-herdr-chat "* ]]; then
+  read -r crepo csha < <(grep -v '^#' "$HERE/herdr-chat.pin")
+  [[ -d "$CHATSRC/.git" ]] || git clone -q --no-checkout "https://github.com/$crepo" "$CHATSRC"
+  git -C "$CHATSRC" cat-file -e "$csha^{commit}" 2>/dev/null || { echo "fetch herdr-chat@${csha:0:7}"; git -C "$CHATSRC" fetch -q origin; }
+fi
 while IFS=$'\t' read -r mod repo _subpath sha _license mode; do
   [[ -z $mod || $mod == \#* ]] && continue
   want "$mod" "$mode" || continue
@@ -41,6 +48,23 @@ while IFS=$'\t' read -r mod repo _subpath sha _license mode; do
   curl -fsSL --retry 3 -o "$f.part" "https://codeload.github.com/$repo/tar.gz/$sha" && mv "$f.part" "$f"
 done < "$HERE/sources.tsv"
 if [[ $extra == *" --fetch "* ]]; then echo "Downloaded into $CACHE (and $SRC). Run ./install.sh to install, offline."; exit 0; fi
+
+# 0b. herdr-chat (my fork, devin-provider branch), at its pinned commit, from a stable clone ($CHATSRC). Its `chat` mod has the same
+#     name as Shepherdr's, which is moved to mods/chat.orig first (its installer refuses a mods/chat that is not its own).
+#     Not fatal: without node >= 24 or an agent on PATH it says why, Shepherdr's chat is put back, and the install goes on without it.
+if [[ $extra != *" --no-herdr-chat "* ]]; then
+  git -C "$CHATSRC" checkout -q "$csha"
+  moved=0
+  if [[ -d "$APP/mods/chat" && ! -f "$APP/mods/chat/.herdr-chat" && ! -e "$APP/mods/chat.orig" ]]; then
+    backup mods/chat; mv "$APP/mods/chat" "$APP/mods/chat.orig"; moved=1
+  fi
+  if HERDR_APP_HOME="$APP" "$CHATSRC/install.sh" --no-subagents; then :
+  else
+    echo "warn  herdr-chat did not install (see above); continuing without it" >&2
+    [[ $moved = 1 ]] && { rm -rf "$APP/mods/chat"; mv "$APP/mods/chat.orig" "$APP/mods/chat"; }
+  fi
+  [[ -f "$APP/mods/new-chat/mod.json" ]] && HERDR_CHAT=1
+fi
 
 # 1. Shepherdr, at its pinned commit, from a stable clone ($SRC).
 #    --no-build: no web app/service (needs bun + tailscale; rerun without it to add them).
