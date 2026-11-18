@@ -105,6 +105,11 @@ EDITS.append((
 EDITS.append((
     "    const all = holdDone(dropLeaving(built, ",
     "    const all = holdDone(dropLeaving(built.filter(r => r.title !== \"herdr-automations\"), "))
+# 11. the row of the session on screen stays painted also when it is shown as a chat pane (focused().agent / pane), not only as a terminal.
+EDITS.append((
+    "    const on = row.focused;\n    const picked",
+    "    const onScreen = focused();\n"
+    "    const on = row.focused || (!row.inner && onScreen?.agent === row.address);\n    const picked"))
 for old, new in EDITS:
     # The folding of sub-agents (the last edit on the entries loop) supersedes the one for folders: the second no longer shows.
     if new in s or (old.startswith("          for (const entry of folder.entries) if (open ||") and "let cut = null;" in s):

@@ -5,3 +5,4 @@ file-editor	werlang/herdr-file-editor	mods/file-editor	ab5bceb4d53f876637451de83
 desktop-notifications	benjaminsicard/herdr-mods	desktop-notifications/mods/desktop-notifications	134a725692cf35088acc14353bd6e1d1ea5078a6	none stated	default
 agent-sidebar	jeffarese/herdr-agents-sidebar	mods/agent-sidebar	6165719bbc16b2c3e89c09d5deba09290e3f0167	MIT	default
 auto-tabs	longwave/herdr-auto-tabs	mods/auto-tabs	4be0878452829468dc701015bf53f82559f72ed4	none stated	default
+tmux-prefix	herdrdev/herdr-layout-examples	tmux-prefix/mods/tmux-prefix	0ec967640bf854ffb839e9af06c1e0c328bc9815	none stated	default

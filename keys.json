@@ -5,6 +5,7 @@
     "cmd-shift-t": "mod.open:reopen-tab",
     "cmd-l": "chat.focus",
     "cmd-shift-b": "mod.open:submit",
+    "cmd-e": "mod.open:tmux-prefix",
     "cmd-shift-e": "mod.open:devin-sessions",
     "cmd-shift-k": "session-peek.keep"
   },
@@ -20,5 +21,8 @@
     "cmd-8": "agent-sidebar.8",
     "cmd-9": "agent-sidebar.9",
     "cmd-w": "agent-sidebar.close"
+  },
+  "terminal": {
+    "cmd-e": "mod.open:tmux-prefix"
   }
 }

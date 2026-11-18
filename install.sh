@@ -130,6 +130,23 @@ if [[ -f "$APP/mods/reopen-tab/plan.js" ]]; then
   [[ -f "$APP/mods/new-chat/mod.json" ]] && python3 -I "$HERE/integrations/reopen/patch-chat.py" "$APP"
 fi
 
+# 4e2. tmux-prefix (borrowed example): my commands and the live Keep awake toggle in its list, prefix shown as cmd+e.
+if [[ -f "$APP/mods/tmux-prefix/main.js" ]]; then
+  python3 -I "$HERE/integrations/tmux-prefix/patch-bindings.py" "$APP"
+fi
+
+# 4e3. herdr-chat's timeline: no jump while scrolling up through history (rows above the screen were placed by estimated heights).
+if [[ $HERDR_CHAT = 1 && -f "$APP/mods/chat/timeline.js" ]]; then
+  backup mods/chat
+  python3 -I "$HERE/integrations/chat-scroll/patch-timeline.py" "$APP"
+fi
+
+# 4e4. herdr-chat opens Shepherdr's Assistant tab (props role/slot/folder/settings, no chat id).
+if [[ $HERDR_CHAT = 1 && -f "$APP/mods/chat/main.js" ]]; then
+  backup mods/chat
+  python3 -I "$HERE/integrations/assistant/patch-assistant.py" "$APP"
+fi
+
 # 4f. agent-sidebar (optional mod): folder headings always, and agent-sidebar.<n> jump commands (cmd+1..9 in shepherdr-files).
 #     Re-applied on every install; moving the pin in sources.tsv undoes it until then.
 if [[ -f "$APP/mods/agent-sidebar/main.js" ]]; then

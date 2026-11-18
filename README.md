@@ -2,7 +2,7 @@
 
 My setup for the [Herdr](https://herdr.dev) desktop app: the
 [Shepherdr](https://github.com/eliasstravik/shepherdr) layout, a shortcuts window, reopen-closed-tab and
-Devin status reporting. Nothing else: no hand-made layouts, no leader menu, no other mods.
+Devin status reporting. Nothing else: no hand-made layouts, no other mods.
 Only *my* files live here; other people's code is fetched, pinned, from their own repos.
 
 ## Install
@@ -25,6 +25,7 @@ Then `shepherdr doctor`, and `ctrl+shift+l` to pick the Shepherdr layout.
 | Shepherdr | layout + 28 mods + helpers (`herdr-task`, ...) + agent hooks; pinned in `shepherdr.pin`, cloned to `~/src/shepherdr`, installed with `--no-build` (no web service) | [eliasstravik/shepherdr](https://github.com/eliasstravik/shepherdr) | see its repo |
 | `submit` | bug/feature request dialog (`cmd+shift+b`): appends `- [ ] date · bug\|feature · text` to `requests.md` in this repo, which the agent working here reads as the backlog and ticks (like Plate's Submit); `install.sh` writes the repo path to `~/.config/herdr-app/dotfiles-path` | this repo; based on Herdr's `prompt` | Apache-2.0 |
 | `keys-help` | all shortcuts window (`cmd+/`) | this repo; based on Herdr's `help` | Apache-2.0 |
+| `tmux-prefix` | prefix menu (`cmd+e`): tmux-style keys + my commands + a live Keep awake toggle (`caffeinate -dis -w <Herdr pid>`: quitting Herdr ends it; pid in `keep-awake.pid`); patched by `integrations/tmux-prefix/patch-bindings.py` (step 4e2, one anchored edit set, re-applied on install; runs `hc` to forward keys, `exec` for caffeinate) | [herdrdev/herdr-layout-examples](https://github.com/herdrdev/herdr-layout-examples) | none stated |
 | `reopen-tab` | reopen closed tabs (`cmd+shift+t`) | [mustafaTokmak/herdr-reopen-tab](https://github.com/mustafaTokmak/herdr-reopen-tab) | MIT |
 | `file-editor` | file tree and tabbed editor (syntax highlighting, Markdown/SVG preview); used by the `shepherdr-files` layout; elsewhere `herdr-app do pane.split --direction right --mod file-editor` | [werlang/herdr-file-editor](https://github.com/werlang/herdr-file-editor) | none stated |
 | `session-peek` | bar (name, status, Keep, ✕) over the chat-view preview of a session that has no pane; opened by the patched `agent-sidebar` | this repo; based on Herdr's `peek` | Apache-2.0 |
@@ -53,6 +54,7 @@ Shepherdr's `layout:shepherdr` keys plus mine are copied to `layout:shepherdr-fi
 | `cmd+/`, `cmd+shift+/` | all shortcuts |
 | `cmd+shift+t` | reopen the last closed tab |
 | `cmd+shift+b` | submit a bug or feature request about this setup (`submit`) |
+| `cmd+e` | prefix menu (`tmux-prefix`, borrowed and patched): tmux-style tab/pane/space keys plus mine (`a` Keep awake, live ON/off, `b` submit, `e` Devin sessions, `s` keep, `r` reopen, `i` chat input, `/` shortcuts); `?` lists all |
 | `cmd+shift+e` | Devin sessions: list, archive or restore with Enter (`devin-sessions`, uses `devin-archive`) |
 | `cmd+l` | focus the input box of the Shepherdr chat on screen (`chat.focus`) |
 | `cmd+1..9` | open the Nth session as the sidebar lists it now (`agent-sidebar.N`), in `shepherdr-files` only; replaces `cmd+1..9` = tabs there (the order follows the list, so it moves with status) |
@@ -67,6 +69,8 @@ Shepherdr merges its own keys (`ctrl+k` jump, `ctrl+shift+?`, `alt+1..9`, ...) a
 ## Privacy
 
 `install.sh` (step 2b) sets `telemetry: false` in the app's `settings.json` (no anonymous usage data) and `everywhere.agents.feedback: false` in `~/.config/shepherdr/settings.json` (agents never offer to file Shepherdr problems as GitHub issues). Ideas and bugs go to `requests.md` through the `submit` mod and stay on this machine.
+
+With herdr-chat installed, step 4e3 runs `integrations/chat-scroll/patch-timeline.py`: scrolling up through the chat history made the conversation jump ("sambando"). It replaces herdr-chat's `timeline.js` with `integrations/chat-scroll/timeline.js` (derived from upstream, whose md5 it checks) and edits `main.js`. Four faults: the first measure of a row never corrected the scroll position (upstream computes the delta after storing the new height, so it is 0); rows entering above the screen were placed by estimated heights, so now the rows on screen hang up from the first row below the viewport; paging in older history added estimated heights of raw items (which collapse into groups), so now a row on screen is pinned; and ↓ Latest was added/removed (moving the layout) and showed on the first notch, so it is now always laid out, faded, and shown only when more than 200 px from the bottom. Re-applied on every install; if herdr-chat changes `timeline.js` the patch stops and changes nothing.
 
 With herdr-chat installed, `install.sh` also copies Shepherdr's `session-note.sh` (from `mods/chat.orig`) into herdr-chat's `mods/chat`, because the SessionStart hook in Claude's and Codex's config still points there.
 
@@ -91,6 +95,8 @@ Devin's `PermissionRequest` hook also runs `integrations/devin/herdr-ask.sh` (co
 With [herdr-chat](https://github.com/ChmaraX/herdr-chat) installed in the app home (its `new-chat` mod is there), step 4f also applies `integrations/agent-sidebar/patch-launcher.py`: a pi, claude, codex or devin session started from the launcher (`cmd+n`, the +) in a space that is already open becomes a herdr-chat chat tab (`tab.new {mod: "chat", props: {chat, provider, cwd}}`) instead of a terminal running the agent. With no space open for the folder (e.g. right after the app starts) it does `space.new`, adds the chat tab to it (`space.new` takes no mod) and closes the shell tab the space started with. Shells and other machines work as before. herdr-chat's `chat` mod has the same name as Shepherdr's, so Shepherdr's is moved to `mods/chat.orig`.
 
 **herdr-chat as the chat view (the official setup).** My herdr-chat branch (`devin-provider` in `~/Not Synced/herdr-chat`, adds Devin as a provider; the clone's `origin` is ChmaraX's, so it is not pushed) is installed with `HERDR_APP_HOME=… ./install.sh --no-subagents` from that clone, after `mv mods/chat mods/chat.orig`. Then `./install.sh --no-shepherdr` here: with herdr-chat's `new-chat` in the app home it skips Shepherdr's installer (which would put its `chat` back) and the patches for Shepherdr's chat (step 4c), and applies the two herdr-chat patches above. What stops working, because herdr-chat's `chat` takes `{chat, cwd, provider}` and not Shepherdr's `{terminal, thread}`: the Chat view of `pane-chat` over a terminal agent, and the sidebar's chat preview of a session without a pane (`session-peek`; turn it off with `herdr-app do agent-sidebar.preview`). **Back to Shepherdr's chat:** `./install.sh --uninstall` in the herdr-chat clone, then `rm -rf mods/chat && mv mods/chat.orig mods/chat`, then `./install.sh` here (it reinstalls Shepherdr and its patches).
+
+**Assistant tab:** Shepherdr's Assistant opens `chat` with `{role, slot, folder, settings}`; `integrations/assistant/patch-assistant.py` (install.sh step 4e4) makes herdr-chat derive the chat id from `slot`, the folder from `folder` and the agent from `settings.agent`. Its Chat/Terminal toggle (from `pane-chat`) still does nothing there.
 
 ## Archiving Devin sessions
 

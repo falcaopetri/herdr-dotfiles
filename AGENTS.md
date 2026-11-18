@@ -37,7 +37,7 @@ Do not edit, in the app home or here, anything that belongs to someone else:
   name into `mods/` here.
 - Borrowed mods listed in `sources.tsv` (`reopen-tab`). Move the pin instead.
 
-Exceptions: `integrations/devin/chat/patch-chat.py` patches Shepherdr's `chat` mod for Devin (see the README), and `integrations/reopen/patch-plan.py` adds Devin to the `reopen-tab` mod's `RESUME` table (the user approved this patch instead of a clone), and, only while herdr-chat is installed, `integrations/reopen/patch-chat.py` (reopen a closed chat tab as a chat) and `integrations/agent-sidebar/patch-launcher.py` (new agent sessions open as herdr-chat chats). herdr-chat's `chat` mod then stands in for Shepherdr's (`mods/chat.orig`): see the README. They are
+Exceptions: `integrations/devin/chat/patch-chat.py` patches Shepherdr's `chat` mod for Devin (see the README), and `integrations/reopen/patch-plan.py` adds Devin to the `reopen-tab` mod's `RESUME` table (the user approved this patch instead of a clone), and, only while herdr-chat is installed, `integrations/reopen/patch-chat.py` (reopen a closed chat tab as a chat) and `integrations/agent-sidebar/patch-launcher.py` (new agent sessions open as herdr-chat chats), `integrations/chat-scroll/patch-timeline.py` (herdr-chat's timeline no longer jumps while scrolling up). herdr-chat's `chat` mod then stands in for Shepherdr's (`mods/chat.orig`): see the README. They are
 re-applied by `install.sh`; don't hand-edit `mods/chat` otherwise, and when its anchors break after a pin bump, fix the patch.
 
 Only my own files are committed. No custom layouts, no other mods for now (see README).
