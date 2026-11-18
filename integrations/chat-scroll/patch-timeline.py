@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
-"""Stops herdr-chat's timeline from jumping ("sambando") while you scroll up through history, and keeps ↓ Latest from
-showing on the first notch of a scroll. Four faults in the upstream timeline.js / main.js:
- 1. on_size_change computed the correction as `s.height - (old ?? this.h(it))` AFTER storing the new height, so for a row
-    measured for the first time it was always 0: the error of the estimated height was never compensated.
- 2. Scrolled up, rows were placed at `first - top` from ESTIMATED heights of everything above, so a row entering above
-    the screen displaced what you were reading for a frame. Now the rows on screen and above hang UP from the first row
-    below the viewport (rows below hang down), so unmeasured rows grow away from what is on screen, and a row only moves
-    between those two groups off screen. Sticky uses the same two containers, so leaving the bottom remounts nothing.
- 3. Paging older history added the ESTIMATED heights of the raw items to `top`, but the view shows rows (tools collapse
-    into groups, hidden items show nothing). Now a row on screen is pinned and `top` is set to keep it where it was.
- 4. ↓ Latest and its band were added to/removed from the tree and showed on the first notch. They are now always laid
-    out, only faded, and shown once you are more than 200 px from the bottom (`timeline.far`).
+"""Stops herdr-chat's timeline from jumping ("sambando") while you scroll through the history, and keeps ↓ Latest from
+showing on the first notch of a scroll.
+ROOT CAUSE (found with a screen recording and red/blue row markers): the timeline mixed two units. Sizes reported by
+on_size_change are multiplied by the UI zoom (settings.json "zoom", here 1.2), but the positions it sets with top()/bottom()
+are not. At zoom 1.0 both agree, which is probably how upstream was tested; at any other zoom every position computed from
+the stored heights is off in proportion to its distance from the anchor, so rows jump by about one row each time the first
+drawn row changes, and a gap opens under the last message. The timeline now measures the scale with a 100 px probe element
+and keeps every height in layout px.
+Also fixed, because they made it worse (the scroller lays rows out by ESTIMATED heights and corrects afterwards):
+  - rows entering the window are first drawn in a zero-height clipped pool, only to be measured; then they join the main
+    column, whose top is offsets[first] - top (no estimate in it); a height only counts while the row was drawn (stale
+    cached heights from another width or an opened group are re-measured first);
+  - the first measure of a row above `top` corrects `top` by the estimate it replaces (upstream subtracted it after storing
+    the measure, so the correction was always 0);
+  - paging in older history pins a row on screen instead of adding estimates of raw items (which collapse into groups);
+  - ↓ Latest and its band are always laid out, only faded, and shown once you are more than 200 px from the bottom.
+Not covered: a row that changes height AFTER it was measured, above the screen (async content), still shifts for a frame.
 timeline.js is replaced by integrations/chat-scroll/timeline.js (derived from upstream, whose md5 is checked: if herdr-chat
 changed it, nothing is touched and the patch must be redone from the new upstream). main.js gets anchored edits.
-(A simulation of view() on random chats, 8 seeds x 400 scroll steps: upstream 417 jumping frames up to 876 px; this 0 and
-0 rows remounted while visible.) Idempotent; re-applied by install.sh.
+Idempotent; re-applied by install.sh.
 Usage: patch-timeline.py <app home>"""
 import hashlib, pathlib, sys
 
