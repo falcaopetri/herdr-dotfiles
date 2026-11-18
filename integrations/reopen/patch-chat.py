@@ -3,8 +3,8 @@
 (`herdr-chat-host serve --chat <id> --cwd <dir> --provider <p> ...`), so the borrowed mod reopened it as a plain terminal
 running that host: no chat view, just the host's text under pane-chat's Chat/Terminal toggle. With this patch a closed tab
 whose first terminal is such a host is reopened with tab.new {mod: "chat", props: {chat, provider, cwd}}: the same chat id,
-so the host resumes the session its registry records. (A space reopened as a whole, and a chat split beside other panes,
-still come back the old way.)
+so the host resumes the session its registry records. (A space reopened as a whole is handled too: its shell tab is swapped for the chat tab. A chat split beside other panes
+still comes back the old way.)
 Only for the herdr-chat `chat` mod: install.sh applies this when mods/new-chat exists. Idempotent; exact anchors, and it
 changes nothing if one is gone (fix it after a pin bump).
 Usage: patch-chat.py <app home>"""
@@ -13,7 +13,7 @@ import sys, pathlib
 mod = pathlib.Path(sys.argv[1]) / "mods/reopen-tab"
 plan, main = mod / "plan.js", mod / "main.js"
 ps, ms = plan.read_text(), main.read_text()
-if "chatOf" in ps and "chatOf" in ms:
+if "chatOf" in ps and "chatOf(first)" in ms and "chatSpace" in ms and "argv && !chatOf(first)" in ms:
     print("reopen-tab already reopens chats")
     sys.exit(0)
 
@@ -38,9 +38,37 @@ TAB_OLD = '  run("tab.new", { space, ...(name ? { name } : {}), ...(folder ? { f
 TAB_NEW = ('  const chat = chatOf(first);\n'
            '  if (chat) run("tab.new", { space, name: name || chat.provider, mod: "chat", props: chat });\n'
            '  else run("tab.new", { space, ...(name ? { name } : {}), ...(folder ? { folder } : {}), ...(argv ? { argv } : {}) });\n')
-for s, a, label in ((ps, PLAN_ANCHOR, "plan.js"), (ms, IMPORT_OLD, "main.js import"), (ms, TAB_OLD, "main.js tab.new")):
-    if s.count(a) != 1:
+SP_OLD = """  const pane = await until(cx, () => panesIn(firstTab)[0], "tab's pane");
+  await remember({ spaces: { [plan.oldSpace]: space } });
+"""
+SP_NEW = """  const chatSpace = chatOf(first);
+  if (chatSpace) {
+    const shell = firstTab;
+    run("tab.new", { space, name: tab || chatSpace.provider, mod: "chat", props: chatSpace });
+    const chatTab = (await until(cx, () => tabsOf(space).find((t) => t.id !== shell), "chat tab")).id;
+    run("tab.close", { id: shell });
+    const chatPane = await until(cx, () => panesIn(chatTab)[0], "tab's pane");
+    await remember({ spaces: { [plan.oldSpace]: space } });
+    await splitRest(cx, chatTab, chatPane, rest);
+    return { space, tab: chatTab, pane: chatPane };
+  }
+"""
+SN_OLD = '  run("space.new", { ...(name ? { name } : {}), ...(folder ? { folder } : {}), ...(tab ? { tab } : {}), ...(argv ? { argv } : {}),'
+SN_NEW = '  run("space.new", { ...(name ? { name } : {}), ...(folder ? { folder } : {}), ...(tab ? { tab } : {}), ...(argv && !chatOf(first) ? { argv } : {}),'
+edits = [  # (file text, anchor, replacement, label, already-applied marker)
+    ("p", PLAN_ANCHOR, PLAN_NEW + PLAN_ANCHOR, "plan.js", "export function chatOf"),
+    ("m", IMPORT_OLD, IMPORT_NEW, "main.js import", "import { chatOf,"),
+    ("m", TAB_OLD, TAB_NEW, "main.js tab.new", "const chat = chatOf(first)"),
+    ("m", SP_OLD, SP_NEW + SP_OLD, "main.js space.new", "const chatSpace"),
+    ("m", SN_OLD, SN_NEW, "main.js space.new argv", "argv && !chatOf(first)"),
+]
+texts = {"p": ps, "m": ms}
+for f, old, new, label, mark in edits:
+    if mark in texts[f]:
+        continue
+    if texts[f].count(old) != 1:
         sys.exit("patch-chat.py: anchor not found (%s); nothing changed (update the patch)" % label)
-plan.write_text(ps.replace(PLAN_ANCHOR, PLAN_NEW + PLAN_ANCHOR))
-main.write_text(ms.replace(IMPORT_OLD, IMPORT_NEW).replace(TAB_OLD, TAB_NEW))
-print("reopen-tab: a closed chat tab comes back as a chat")
+    texts[f] = texts[f].replace(old, new)
+plan.write_text(texts["p"])
+main.write_text(texts["m"])
+print("reopen-tab: a closed chat tab (or space) comes back as a chat")

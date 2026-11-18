@@ -140,6 +140,12 @@ if [[ -f "$APP/mods/agent-sidebar/main.js" ]]; then
     python3 -I "$HERE/integrations/agent-sidebar/patch-launcher.py" "$APP"
 fi
 
+# 4f2. herdr-chat's `chat` has no session-note.sh, but the SessionStart hook Shepherdr put in Claude's/Codex's config still points at
+#      mods/chat/session-note.sh ("hook failed: No such file"). Give it Shepherdr's copy (kept in mods/chat.orig).
+if [[ $HERDR_CHAT = 1 && -f "$APP/mods/chat.orig/session-note.sh" && -d "$APP/mods/chat" ]]; then
+  install -m 755 "$APP/mods/chat.orig/session-note.sh" "$APP/mods/chat/session-note.sh"
+fi
+
 # 4g. Agents open in chat view: a small anchored addition to pane-chat (once per terminal). Re-applied on every install;
 #     `shepherdr update` undoes it until then.
 # DISABLED: the loop made tabs flap (it focused chats that were already open). Re-enable after fixing patch-auto-chat.py.
