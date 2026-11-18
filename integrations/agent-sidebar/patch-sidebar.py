@@ -15,6 +15,7 @@
 9. the preview can be turned off (shared "session-peek.off", toggled by `herdr-app do agent-sidebar.preview`): opening a session
    without a pane then keeps it at once (a pane of its own, as chat) instead of previewing.
 10. the scheduler's own session (herdr-automations, kept by herdr-core for Shepherdr) is not listed.
+11. the first nine sessions show their shortcut (⌘1..⌘9) at the start of the row.
 Re-applied by install.sh; idempotent; exact anchors, and it changes nothing if one is gone (fix it after a pin bump).
 Usage: patch-sidebar.py <app home>"""
 import sys, pathlib
@@ -110,6 +111,15 @@ EDITS.append((
     "    const on = row.focused;\n    const picked",
     "    const onScreen = focused();\n"
     "    const on = (onScreen?.tab ? !row.inner && agents().some(a => a.address === row.address && a.tab === onScreen.tab) : row.focused);\n    const picked"))
+# 12. each of the first nine sessions shows its shortcut (the n of agent-sidebar.<n>, counted like the key does: sub-agents not counted).
+EDITS.append((
+    "    const picked = this.selected === row.address;\n",
+    "    const picked = this.selected === row.address;\n"
+    "    const num = row.inner ? 0 : this.visible.filter(r => !r.inner).length + 1;\n"))
+EDITS.append((
+    "      .child(this.program(t, row, expanded ? 18 : 16))\n",
+    "      .when(num >= 1 && num <= 9, el => el.child(div().flex_none().w(22).whitespace_nowrap().text_size(10).text_color(t.dim).child(`\\u2318${num}`)))\n"
+    "      .child(this.program(t, row, expanded ? 18 : 16))\n"))
 for old, new in EDITS:
     # The folding of sub-agents (the last edit on the entries loop) supersedes the one for folders: the second no longer shows.
     if new in s or (old.startswith("          for (const entry of folder.entries) if (open ||") and "let cut = null;" in s):
