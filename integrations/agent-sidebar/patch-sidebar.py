@@ -109,7 +109,7 @@ EDITS.append((
 EDITS.append((
     "    const on = row.focused;\n    const picked",
     "    const onScreen = focused();\n"
-    "    const on = row.focused || (!row.inner && onScreen?.agent === row.address);\n    const picked"))
+    "    const on = (onScreen?.tab ? !row.inner && agents().some(a => a.address === row.address && a.tab === onScreen.tab) : row.focused);\n    const picked"))
 for old, new in EDITS:
     # The folding of sub-agents (the last edit on the entries loop) supersedes the one for folders: the second no longer shows.
     if new in s or (old.startswith("          for (const entry of folder.entries) if (open ||") and "let cut = null;" in s):
