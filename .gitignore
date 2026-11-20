@@ -6,3 +6,10 @@ jsconfig.json
 requests.md
 
 *.herdr-chat.lock
+
+# third-party skills (mattpocock/skills): reinstall with npx skills@latest add
+.claude/skills/*
+!.claude/skills/playground/
+
+# local-markdown issue tracker
+.scratch/
